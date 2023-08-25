@@ -9,7 +9,7 @@
 
 	let jobApplications: Promise<JobApplication[]>;
 	let jobs: JobApplication[] = [];
-	onMount(async () => {
+	onMount(() => {
 		jobApplications = getJobApplications().then((res: JobApplication[]) => (jobs = res));
 	});
 

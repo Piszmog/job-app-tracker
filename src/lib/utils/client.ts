@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import type { JobApplication, JobApplicationNote } from './types';
+import type { JobApplication, JobApplicationNote, JobApplicationStatusHistory } from './types';
 
 export const getJobApplications = async (): Promise<JobApplication[]> => {
 	return (await invoke('get_job_applications')) as JobApplication[];
@@ -16,16 +16,22 @@ export const createJobApplication = async (
 export const updateJobApplicationStatus = async (
 	id: number,
 	status: string
-): Promise<JobApplication> => {
-	return (await invoke('update_job_application_status', { id, status })) as JobApplication;
+): Promise<JobApplicationStatusHistory> => {
+	return (await invoke('update_job_application_status', {
+		id,
+		status
+	})) as JobApplicationStatusHistory;
 };
 
 export const getJobApplication = async (id: number): Promise<JobApplication> => {
 	return (await invoke('get_job_application', { id })) as JobApplication;
 };
 
-export const addJobApplicationNote = async (id: number, note: string): Promise<JobApplication> => {
-	return (await invoke('add_job_application_note', { id, note })) as JobApplication;
+export const addJobApplicationNote = async (
+	id: number,
+	note: string
+): Promise<JobApplicationNote> => {
+	return (await invoke('add_job_application_note', { id, note })) as JobApplicationNote;
 };
 
 export const getJobApplicationNotes = async (id: number): Promise<JobApplicationNote[]> => {

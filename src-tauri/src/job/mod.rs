@@ -149,37 +149,36 @@ pub fn create_job_application(conn: &mut Connection, company: &str, title: &str,
     Ok(application)
 }
 
-pub fn update_job_application_status(conn: &mut Connection, id: i32, status: JobApplicationStatus) -> Result<JobApplication> {
+pub fn update_job_application_status(conn: &mut Connection, id: i32, status: JobApplicationStatus) -> Result<JobApplicationStatusHistory> {
     let tx = conn.transaction()?;
 
     tx.execute(
-        "INSERT INTO
-        job_application_status_histories (job_application_id, status)
-        VALUES (?1, ?2)",
+        "UPDATE job_applications
+        SET status = ?1, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?2",
         params![
-            id,
             status.to_string(),
+            id,
         ],
     )?;
-    let application = {
+    let job_status = {
         let mut statement = tx.prepare(
-            "UPDATE job_applications
-        SET status = ?1
-        WHERE id = ?2
-        RETURNING id, company, title, url, status, applied_at, updated_at, created_at",
+            "INSERT INTO
+        job_application_status_histories (job_application_id, status)
+        VALUES (?1, ?2)
+        RETURNING id, job_application_id, status, created_at",
         )?;
-
         statement.query_row(
             params![
-            status.to_string(),
             id,
+            status.to_string(),
         ],
-            scan_job_application,
+            scan_job_application_status_history,
         )?
     };
     tx.commit()?;
 
-    Ok(application)
+    Ok(job_status)
 }
 
 pub fn get_job_applications(conn: &Connection) -> Result<Vec<JobApplication>> {
@@ -204,17 +203,21 @@ pub fn get_job_application(conn: &Connection, id: i32) -> Result<JobApplication>
     Ok(application)
 }
 
-pub fn add_job_application_note(conn: &Connection, id: i32, note: &str) -> Result<()> {
-    conn.execute(
+pub fn add_job_application_note(conn: &Connection, id: i32, note: &str) -> Result<JobApplicationNote> {
+    let mut statement = conn.prepare(
         "INSERT INTO
         job_application_notes (job_application_id, note)
-        VALUES (?1, ?2)",
+        VALUES (?1, ?2)
+        RETURNING id, job_application_id, note, created_at"
+    )?;
+    let application_note = statement.query_row(
         params![
             id,
             note,
         ],
+        scan_job_application_note,
     )?;
-    Ok(())
+    Ok(application_note)
 }
 
 fn scan_job_application(row: &Row) -> Result<JobApplication> {

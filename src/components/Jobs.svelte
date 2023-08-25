@@ -1,23 +1,32 @@
 <script lang="ts">
 	import Job from './Job.svelte';
-	import type { JobApplication } from '../lib/utils/types';
+	import type {
+		JobApplication,
+		JobApplicationNote,
+		JobApplicationStatusHistory
+	} from '../lib/utils/types';
 	import Drawer from './Drawer.svelte';
 	import JobDetails from './JobDetails.svelte';
+	import { getJobApplicationNotes, getJobApplicationStatusHistories } from '../lib/utils/client';
 
 	export let jobs: JobApplication[] = [];
 
 	let open = false;
 	let selectedJob: JobApplication;
-	const handleView = (job: JobApplication) => {
+	let notes: JobApplicationNote[] = [];
+	let histories: JobApplicationStatusHistory[] = [];
+	const handleView = async (job: JobApplication) => {
 		selectedJob = job;
+		notes = await getJobApplicationNotes(job.id);
+		histories = await getJobApplicationStatusHistories(job.id);
 		open = true;
 	};
 
-	const handleSubmit = (e: CustomEvent<JobApplication>) => {
+	const handleSubmit = (e: CustomEvent<JobApplicationStatusHistory>) => {
 		const { detail } = e;
-		const index = jobs.findIndex((job) => job.id === detail.id);
-		jobs[index] = detail;
-		open = false;
+		const index = jobs.findIndex((job) => job.id === detail.jobApplicationId);
+		jobs[index].status = detail.status;
+		jobs[index].updatedAt = detail.createdAt;
 	};
 </script>
 
@@ -45,5 +54,11 @@
 {/if}
 
 <Drawer title="Job Application" bind:open>
-	<JobDetails on:submit={handleSubmit} on:cancel={() => (open = false)} {...selectedJob} />
+	<JobDetails
+		on:submit={handleSubmit}
+		on:cancel={() => (open = false)}
+		{...selectedJob}
+		{notes}
+		{histories}
+	/>
 </Drawer>

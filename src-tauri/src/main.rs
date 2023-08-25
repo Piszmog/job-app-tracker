@@ -52,7 +52,7 @@ fn create_job_application(opts: tauri::State<Options>, company: &str, title: &st
 }
 
 #[tauri::command]
-fn update_job_application_status(opts: tauri::State<Options>, id: i32, status: job::JobApplicationStatus) -> JobApplication {
+fn update_job_application_status(opts: tauri::State<Options>, id: i32, status: job::JobApplicationStatus) -> JobApplicationStatusHistory {
     let mut conn = Connection::open(&opts.path).unwrap();
     job::update_job_application_status(&mut conn, id, status).unwrap()
 }
@@ -64,7 +64,7 @@ fn get_job_application(opts: tauri::State<Options>, id: i32) -> JobApplication {
 }
 
 #[tauri::command]
-fn add_job_application_note(opts: tauri::State<Options>, id: i32, note: &str) {
+fn add_job_application_note(opts: tauri::State<Options>, id: i32, note: &str) -> JobApplicationNote {
     let conn = Connection::open(&opts.path).unwrap();
     job::add_job_application_note(&conn, id, note).unwrap()
 }
