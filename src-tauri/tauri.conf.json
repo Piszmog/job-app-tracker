@@ -37,7 +37,7 @@
 			{
 				"fullscreen": false,
 				"resizable": true,
-				"title": "job-app-tracker",
+				"title": "Job Application Tracker",
 				"width": 800,
 				"height": 600
 			}

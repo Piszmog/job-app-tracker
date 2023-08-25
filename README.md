@@ -1,7 +1,30 @@
-# Tauri + Svelte + Typescript
+# Job Application Tracker
 
-This template should help get you started developing with Tauri, Svelte and TypeScript in Vite.
+Job hunting can be difficult. There are many things to track. Such as,
 
-## Recommended IDE Setup
+- Where have you applied?
+- What was the position?
+- When did you apply?
+- What is the description of the position?
+- What is the status of the application?
+- Do you have any notes about the application?
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+This desktop application is designed to help you track your job applications.
+
+![img](./images/home.png)
+
+The application also tracks the history of a Job Application.
+
+![img](./images/details.png)
+
+## Installation
+
+TODO
+
+## TODOS
+
+- Finish README
+- Pretty statistics
+- Export JSON
+- Import JSON
+- Delete Job Application

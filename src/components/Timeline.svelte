@@ -9,14 +9,25 @@
 	export let notes: JobApplicationNote[] = [];
 
 	let data = [...histories, ...notes];
-	$: {
-		data = [...histories, ...notes];
-		data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-	}
 
 	const handleSubmit = (e: CustomEvent<JobApplicationNote>) => {
 		data = [e.detail, ...data];
 	};
+
+	$: {
+		// add any histories that are not in data
+		histories.forEach((h) => {
+			if (!data.find((d) => d.id === h.id)) {
+				data = [h, ...data];
+			}
+		});
+		data.sort(
+			(
+				a: JobApplicationNote | JobApplicationStatusHistory,
+				b: JobApplicationNote | JobApplicationStatusHistory
+			) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+		);
+	}
 </script>
 
 <div class="flow-root">
