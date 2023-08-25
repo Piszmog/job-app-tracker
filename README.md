@@ -28,3 +28,5 @@ TODO
 - Export JSON
 - Import JSON
 - Delete Job Application
+- GitHub Actions
+- Downloadable binaries
