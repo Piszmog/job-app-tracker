@@ -2,6 +2,7 @@ use rusqlite::{Connection, params, Result, Row};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct JobApplication {
     pub id: i32,
     pub company: String,
@@ -14,6 +15,7 @@ pub struct JobApplication {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum JobApplicationStatus {
     Accepted,
     Applied,
@@ -22,6 +24,7 @@ pub enum JobApplicationStatus {
     Offered,
     Rejected,
     Watching,
+    Withdrawn,
 }
 
 impl JobApplicationStatus {
@@ -34,6 +37,7 @@ impl JobApplicationStatus {
             "offered" => Self::Offered,
             "rejected" => Self::Rejected,
             "watching" => Self::Watching,
+            "withdrawn" => Self::Withdrawn,
             _ => Self::Applied,
         }
     }
@@ -47,11 +51,31 @@ impl JobApplicationStatus {
             Self::Offered => "offered".to_string(),
             Self::Rejected => "rejected".to_string(),
             Self::Watching => "watching".to_string(),
+            Self::Withdrawn => "withdrawn".to_string(),
         }
     }
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JobApplicationNote {
+    pub id: i32,
+    pub job_application_id: i32,
+    pub note: String,
+    pub created_at: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JobApplicationStatusHistory {
+    pub id: i32,
+    pub job_application_id: i32,
+    pub status: JobApplicationStatus,
+    pub created_at: String,
+}
+
 pub fn init(path: &str) -> Result<()> {
+    // TODO foreign key constraints
     let conn = Connection::open(path)?;
 
     conn.execute(
@@ -68,41 +92,100 @@ pub fn init(path: &str) -> Result<()> {
         [],
     )?;
 
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS job_application_notes (
+            id INTEGER PRIMARY KEY,
+            job_application_id INTEGER NOT NULL,
+            note TEXT NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (job_application_id) REFERENCES job_applications(id) ON DELETE CASCADE
+        )",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS job_application_status_histories (
+            id INTEGER PRIMARY KEY,
+            job_application_id INTEGER NOT NULL,
+            status TEXT NOT NULL DEFAULT 'applied',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (job_application_id) REFERENCES job_applications(id) ON DELETE CASCADE
+        )",
+        [],
+    )?;
+
     Ok(())
 }
 
-pub fn create_job_application(conn: &Connection, company: &str, title: &str, url: &str) -> Result<JobApplication> {
-    let mut statement = conn.prepare(
-        "INSERT INTO job_applications (company, title, url) VALUES (?1, ?2, ?3) RETURNING id, company, title, url, status, applied_at, updated_at, created_at",
-    )?;
-    let application = statement.query_row(
-        params![
+pub fn create_job_application(conn: &mut Connection, company: &str, title: &str, url: &str) -> Result<JobApplication> {
+    let tx = conn.transaction()?;
+
+    let application = {
+        let mut statement = tx.prepare(
+            "INSERT INTO
+        job_applications (company, title, url)
+        VALUES (?1, ?2, ?3)
+        RETURNING id, company, title, url, status, applied_at, updated_at, created_at",
+        )?;
+        statement.query_row(
+            params![
             company,
             title,
             url,
         ],
-        scan_job_application,
+            scan_job_application,
+        )?
+    };
+    tx.execute(
+        "INSERT INTO
+        job_application_status_histories (job_application_id)
+        VALUES (?1)",
+        params![
+            application.id,
+        ],
     )?;
+    tx.commit()?;
+
     Ok(application)
 }
 
-pub fn update_job_application_status(conn: &Connection, id: i32, status: JobApplicationStatus) -> Result<JobApplication> {
-    let mut statement = conn.prepare(
-        "UPDATE job_applications SET status = ?1 WHERE id = ?2 RETURNING id, company, title, url, status, applied_at, updated_at, created_at",
-    )?;
-    let application = statement.query_row(
+pub fn update_job_application_status(conn: &mut Connection, id: i32, status: JobApplicationStatus) -> Result<JobApplication> {
+    let tx = conn.transaction()?;
+
+    tx.execute(
+        "INSERT INTO
+        job_application_status_histories (job_application_id, status)
+        VALUES (?1, ?2)",
         params![
+            id,
+            status.to_string(),
+        ],
+    )?;
+    let application = {
+        let mut statement = tx.prepare(
+            "UPDATE job_applications
+        SET status = ?1
+        WHERE id = ?2
+        RETURNING id, company, title, url, status, applied_at, updated_at, created_at",
+        )?;
+
+        statement.query_row(
+            params![
             status.to_string(),
             id,
         ],
-        scan_job_application,
-    )?;
+            scan_job_application,
+        )?
+    };
+    tx.commit()?;
+
     Ok(application)
 }
 
 pub fn get_job_applications(conn: &Connection) -> Result<Vec<JobApplication>> {
     let mut statement = conn.prepare(
-        "SELECT * FROM job_applications",
+        "SELECT * FROM job_applications
+        ORDER BY updated_at DESC",
     )?;
     let rows = statement.query_map(params![], scan_job_application)?;
     let mut applications = Vec::new();
@@ -121,6 +204,19 @@ pub fn get_job_application(conn: &Connection, id: i32) -> Result<JobApplication>
     Ok(application)
 }
 
+pub fn add_job_application_note(conn: &Connection, id: i32, note: &str) -> Result<()> {
+    conn.execute(
+        "INSERT INTO
+        job_application_notes (job_application_id, note)
+        VALUES (?1, ?2)",
+        params![
+            id,
+            note,
+        ],
+    )?;
+    Ok(())
+}
+
 fn scan_job_application(row: &Row) -> Result<JobApplication> {
     Ok(JobApplication {
         id: row.get(0)?,
@@ -131,5 +227,53 @@ fn scan_job_application(row: &Row) -> Result<JobApplication> {
         applied_at: row.get(5)?,
         updated_at: row.get(6)?,
         created_at: row.get(7)?,
+    })
+}
+
+pub fn get_job_application_notes(conn: &Connection, id: i32) -> Result<Vec<JobApplicationNote>> {
+    let mut statement = conn.prepare(
+        "SELECT * FROM job_application_notes
+        WHERE job_application_id = ?1
+        ORDER BY created_at DESC",
+    )?;
+    let rows = statement.query_map(params![id], scan_job_application_note)?;
+    let mut notes = Vec::new();
+    for row in rows {
+        let note = row?;
+        notes.push(note);
+    }
+    Ok(notes)
+}
+
+fn scan_job_application_note(row: &Row) -> Result<JobApplicationNote> {
+    Ok(JobApplicationNote {
+        id: row.get(0)?,
+        job_application_id: row.get(1)?,
+        note: row.get(2)?,
+        created_at: row.get(3)?,
+    })
+}
+
+pub fn get_job_application_status_histories(conn: &Connection, id: i32) -> Result<Vec<JobApplicationStatusHistory>> {
+    let mut statement = conn.prepare(
+        "SELECT * FROM job_application_status_histories
+        WHERE job_application_id = ?1
+        ORDER BY created_at DESC",
+    )?;
+    let rows = statement.query_map(params![id], scan_job_application_status_history)?;
+    let mut histories = Vec::new();
+    for row in rows {
+        let history = row?;
+        histories.push(history);
+    }
+    Ok(histories)
+}
+
+fn scan_job_application_status_history(row: &Row) -> Result<JobApplicationStatusHistory> {
+    Ok(JobApplicationStatusHistory {
+        id: row.get(0)?,
+        job_application_id: row.get(1)?,
+        status: JobApplicationStatus::from_str(row.get(2)?),
+        created_at: row.get(3)?,
     })
 }

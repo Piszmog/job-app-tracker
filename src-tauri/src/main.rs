@@ -3,7 +3,7 @@
 
 use rusqlite::{Connection, Result};
 
-use crate::job::JobApplication;
+use crate::job::{JobApplication, JobApplicationNote, JobApplicationStatusHistory};
 
 mod job;
 
@@ -19,10 +19,13 @@ fn main() -> Result<()> {
             get_job_applications,
             create_job_application,
             update_job_application_status,
-            get_job_application
+            get_job_application,
+            add_job_application_note,
+            get_job_application_notes,
+            get_job_application_status_histories,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .expect("error while running job application tracker");
 
     Ok(())
 }
@@ -44,18 +47,36 @@ fn get_job_applications(opts: tauri::State<Options>) -> Vec<JobApplication> {
 
 #[tauri::command]
 fn create_job_application(opts: tauri::State<Options>, company: &str, title: &str, url: &str) -> JobApplication {
-    let conn = Connection::open(&opts.path).unwrap();
-    job::create_job_application(&conn, company, title, url).unwrap()
+    let mut conn = Connection::open(&opts.path).unwrap();
+    job::create_job_application(&mut conn, company, title, url).unwrap()
 }
 
 #[tauri::command]
 fn update_job_application_status(opts: tauri::State<Options>, id: i32, status: job::JobApplicationStatus) -> JobApplication {
-    let conn = Connection::open(&opts.path).unwrap();
-    job::update_job_application_status(&conn, id, status).unwrap()
+    let mut conn = Connection::open(&opts.path).unwrap();
+    job::update_job_application_status(&mut conn, id, status).unwrap()
 }
 
 #[tauri::command]
 fn get_job_application(opts: tauri::State<Options>, id: i32) -> JobApplication {
     let conn = Connection::open(&opts.path).unwrap();
     job::get_job_application(&conn, id).unwrap()
+}
+
+#[tauri::command]
+fn add_job_application_note(opts: tauri::State<Options>, id: i32, note: &str) {
+    let conn = Connection::open(&opts.path).unwrap();
+    job::add_job_application_note(&conn, id, note).unwrap()
+}
+
+#[tauri::command]
+fn get_job_application_notes(opts: tauri::State<Options>, id: i32) -> Vec<JobApplicationNote> {
+    let conn = Connection::open(&opts.path).unwrap();
+    job::get_job_application_notes(&conn, id).unwrap()
+}
+
+#[tauri::command]
+fn get_job_application_status_histories(opts: tauri::State<Options>, id: i32) -> Vec<JobApplicationStatusHistory> {
+    let conn = Connection::open(&opts.path).unwrap();
+    job::get_job_application_status_histories(&conn, id).unwrap()
 }

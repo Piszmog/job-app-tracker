@@ -1,35 +1,40 @@
 <script lang="ts">
-	import Greet from './lib/Greet.svelte';
+	import { onMount } from 'svelte';
+	import { getJobApplications } from './lib/utils/client';
+	import type { JobApplication } from './lib/utils/types';
+	import Drawer from './components/Drawer.svelte';
+	import JobApplicationForm from './components/JobForm.svelte';
+	import Jobs from './components/Jobs.svelte';
+	import Header from './components/Header.svelte';
+
+	let jobApplications: Promise<JobApplication[]>;
+	let jobs: JobApplication[] = [];
+	onMount(async () => {
+		jobApplications = getJobApplications().then((res: JobApplication[]) => (jobs = res));
+	});
+
+	let open = false;
+
+	const handleAddJob = (e: CustomEvent<JobApplication>) => {
+		jobs = [e.detail, ...jobs];
+		open = false;
+	};
 </script>
 
-<main class="container">
-	<h1>Welcome to Tauri!</h1>
+<main>
+	<Header title="Job Applications" bind:open />
+	{#await jobApplications}
+		<p class="text-sm font-semibold leading-6 text-gray-900">Loading...</p>
+	{:then data}
+		<Jobs {jobs} />
+	{:catch error}
+		<p class="text-sm font-semibold leading-6 text-gray-900">Error: {error.message}</p>
+	{/await}
 
-	<div class="row">
-		<a href="https://vitejs.dev" target="_blank">
-			<img src="/vite.svg" class="logo vite" alt="Vite Logo" />
-		</a>
-		<a href="https://tauri.app" target="_blank">
-			<img src="/tauri.svg" class="logo tauri" alt="Tauri Logo" />
-		</a>
-		<a href="https://svelte.dev" target="_blank">
-			<img src="/svelte.svg" class="logo svelte" alt="Svelte Logo" />
-		</a>
-	</div>
-
-	<p>Click on the Tauri, Vite, and Svelte logos to learn more.</p>
-
-	<div class="row">
-		<Greet />
-	</div>
+	<Drawer title="Add Job Application" bind:open>
+		<JobApplicationForm on:submit={handleAddJob} on:cancel={() => (open = false)} />
+	</Drawer>
 </main>
 
 <style>
-	.logo.vite:hover {
-		filter: drop-shadow(0 0 2em #747bff);
-	}
-
-	.logo.svelte:hover {
-		filter: drop-shadow(0 0 2em #ff3e00);
-	}
 </style>
