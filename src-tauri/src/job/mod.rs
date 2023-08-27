@@ -1,4 +1,6 @@
-use rusqlite::{Connection, params, Result, Row};
+use std::path::Path;
+
+use rusqlite::{Connection, Error, params, Result, Row};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize)]
@@ -74,7 +76,7 @@ pub struct JobApplicationStatusHistory {
     pub created_at: String,
 }
 
-pub fn init(path: &str) -> Result<()> {
+pub fn init<P: AsRef<Path>>(path: P) -> Result<Connection, Error> {
     // TODO foreign key constraints
     let conn = Connection::open(path)?;
 
@@ -114,7 +116,7 @@ pub fn init(path: &str) -> Result<()> {
         [],
     )?;
 
-    Ok(())
+    Ok(conn)
 }
 
 pub fn create_job_application(conn: &mut Connection, company: &str, title: &str, url: &str) -> Result<JobApplication> {

@@ -1,19 +1,18 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::fs;
+
 use rusqlite::{Connection, Result};
+use tauri::{AppHandle, Manager, State};
 
 use crate::job::{JobApplication, JobApplicationNote, JobApplicationStatusHistory};
 
-mod job;
+pub(crate) mod job;
 
 fn main() -> Result<()> {
-    job::init("../data.db3")?;
-
     tauri::Builder::default()
-        .manage(Options {
-            path: "../data.db3".to_string(),
-        })
+        .manage(AppState { conn: Default::default() })
         .invoke_handler(tauri::generate_handler![
             greet,
             get_job_applications,
@@ -24,14 +23,48 @@ fn main() -> Result<()> {
             get_job_application_notes,
             get_job_application_status_histories,
         ])
+        .setup(|app| {
+            let app_handle = app.handle();
+            let app_state: State<AppState> = app_handle.state();
+
+            let app_dir = app_handle.path_resolver().app_data_dir().expect("failed to get app data dir");
+            fs::create_dir_all(&app_dir).expect("failed to create app data dir");
+            let sqlite_path = app_dir.join("JobAppTracker.sqlite");
+            let conn = job::init(sqlite_path)?;
+            *app_state.conn.lock().unwrap() = Some(conn);
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running job application tracker");
 
     Ok(())
 }
 
-struct Options {
-    path: String,
+pub struct AppState {
+    pub conn: std::sync::Mutex<Option<Connection>>,
+}
+
+pub trait ServiceAccess {
+    fn conn<F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&Connection) -> TResult;
+    fn conn_mut<F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&mut Connection) -> TResult;
+}
+
+impl ServiceAccess for AppHandle {
+    fn conn<F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&Connection) -> TResult {
+        let app_state: State<AppState> = self.state();
+        let db_connection_guard = app_state.conn.lock().unwrap();
+        let db = db_connection_guard.as_ref().unwrap();
+
+        operation(db)
+    }
+
+    fn conn_mut<F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&mut Connection) -> TResult {
+        let app_state: State<AppState> = self.state();
+        let mut db_connection_guard = app_state.conn.lock().unwrap();
+        let db = db_connection_guard.as_mut().unwrap();
+
+        operation(db)
+    }
 }
 
 #[tauri::command]
@@ -40,43 +73,36 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn get_job_applications(opts: tauri::State<Options>) -> Vec<JobApplication> {
-    let conn = Connection::open(&opts.path).unwrap();
-    job::get_job_applications(&conn).unwrap()
+fn get_job_applications(app_handle: AppHandle) -> Vec<JobApplication> {
+    app_handle.conn(|conn| job::get_job_applications(conn)).unwrap()
 }
 
 #[tauri::command]
-fn create_job_application(opts: tauri::State<Options>, company: &str, title: &str, url: &str) -> JobApplication {
-    let mut conn = Connection::open(&opts.path).unwrap();
-    job::create_job_application(&mut conn, company, title, url).unwrap()
+fn create_job_application(app_handle: AppHandle, company: &str, title: &str, url: &str) -> JobApplication {
+    app_handle.conn_mut(|conn| job::create_job_application(conn, company, title, url)).unwrap()
 }
 
 #[tauri::command]
-fn update_job_application_status(opts: tauri::State<Options>, id: i32, status: job::JobApplicationStatus) -> JobApplicationStatusHistory {
-    let mut conn = Connection::open(&opts.path).unwrap();
-    job::update_job_application_status(&mut conn, id, status).unwrap()
+fn update_job_application_status(app_handle: AppHandle, id: i32, status: job::JobApplicationStatus) -> JobApplicationStatusHistory {
+    app_handle.conn_mut(|conn| job::update_job_application_status(conn, id, status)).unwrap()
 }
 
 #[tauri::command]
-fn get_job_application(opts: tauri::State<Options>, id: i32) -> JobApplication {
-    let conn = Connection::open(&opts.path).unwrap();
-    job::get_job_application(&conn, id).unwrap()
+fn get_job_application(app_handle: AppHandle, id: i32) -> JobApplication {
+    app_handle.conn(|conn| job::get_job_application(conn, id)).unwrap()
 }
 
 #[tauri::command]
-fn add_job_application_note(opts: tauri::State<Options>, id: i32, note: &str) -> JobApplicationNote {
-    let conn = Connection::open(&opts.path).unwrap();
-    job::add_job_application_note(&conn, id, note).unwrap()
+fn add_job_application_note(app_handle: AppHandle, id: i32, note: &str) -> JobApplicationNote {
+    app_handle.conn_mut(|conn| job::add_job_application_note(conn, id, note)).unwrap()
 }
 
 #[tauri::command]
-fn get_job_application_notes(opts: tauri::State<Options>, id: i32) -> Vec<JobApplicationNote> {
-    let conn = Connection::open(&opts.path).unwrap();
-    job::get_job_application_notes(&conn, id).unwrap()
+fn get_job_application_notes(app_handle: AppHandle, id: i32) -> Vec<JobApplicationNote> {
+    app_handle.conn(|conn| job::get_job_application_notes(conn, id)).unwrap()
 }
 
 #[tauri::command]
-fn get_job_application_status_histories(opts: tauri::State<Options>, id: i32) -> Vec<JobApplicationStatusHistory> {
-    let conn = Connection::open(&opts.path).unwrap();
-    job::get_job_application_status_histories(&conn, id).unwrap()
+fn get_job_application_status_histories(app_handle: AppHandle, id: i32) -> Vec<JobApplicationStatusHistory> {
+    app_handle.conn(|conn| job::get_job_application_status_histories(conn, id)).unwrap()
 }
