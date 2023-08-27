@@ -7,7 +7,7 @@
 		"withGlobalTauri": false
 	},
 	"package": {
-		"productName": "job-app-tracker",
+		"productName": "Job App Tracker",
 		"version": "0.0.0"
 	},
 	"tauri": {
