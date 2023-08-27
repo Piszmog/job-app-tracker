@@ -6,6 +6,7 @@
 	import JobApplicationForm from './components/JobForm.svelte';
 	import Jobs from './components/Jobs.svelte';
 	import Header from './components/Header.svelte';
+	import Stats from './components/Stats.svelte';
 
 	let jobApplications: Promise<JobApplication[]>;
 	let jobs: JobApplication[] = [];
@@ -26,6 +27,7 @@
 	{#await jobApplications}
 		<p class="text-sm font-semibold leading-6 text-gray-900">Loading...</p>
 	{:then data}
+		<Stats jobsApplications={jobs} />
 		<Jobs {jobs} />
 	{:catch error}
 		<p class="text-sm font-semibold leading-6 text-gray-900">Error: {error.message}</p>
