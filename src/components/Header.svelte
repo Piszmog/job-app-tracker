@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { exportData } from '../lib/utils/export';
 
 	export let title: string;
 	export let open = false;
 
 	const dispatch = createEventDispatcher<{
 		import: never;
-		export: never;
 	}>();
 </script>
 
@@ -26,7 +26,7 @@
 			<button
 				type="button"
 				class="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-100"
-				on:click={() => dispatch('export')}
+				on:click={exportData}
 			>
 				Export
 			</button>

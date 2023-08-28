@@ -14,6 +14,8 @@ pub struct JobApplication {
     pub applied_at: String,
     pub updated_at: String,
     pub created_at: String,
+    pub notes: Option<Vec<JobApplicationNote>>,
+    pub statuses: Option<Vec<JobApplicationStatusHistory>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -232,6 +234,8 @@ fn scan_job_application(row: &Row) -> Result<JobApplication> {
         applied_at: row.get(5)?,
         updated_at: row.get(6)?,
         created_at: row.get(7)?,
+        notes: None,
+        statuses: None,
     })
 }
 
@@ -248,6 +252,18 @@ pub fn get_job_application_notes(conn: &Connection, id: i32) -> Result<Vec<JobAp
         notes.push(note);
     }
     Ok(notes)
+}
+
+pub fn get_all_data(conn: &Connection) -> Result<Vec<JobApplication>> {
+    let applications = get_job_applications(conn).unwrap();
+    let mut data = Vec::new();
+    for app in applications {
+        let mut app = app;
+        app.notes = Some(get_job_application_notes(conn, app.id)?);
+        app.statuses = Some(get_job_application_status_histories(conn, app.id)?);
+        data.push(app);
+    }
+    Ok(data)
 }
 
 fn scan_job_application_note(row: &Row) -> Result<JobApplicationNote> {

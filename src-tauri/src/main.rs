@@ -22,6 +22,7 @@ fn main() -> Result<()> {
             add_job_application_note,
             get_job_application_notes,
             get_job_application_status_histories,
+            get_all_data,
         ])
         .setup(|app| {
             let app_handle = app.handle();
@@ -105,4 +106,9 @@ fn get_job_application_notes(app_handle: AppHandle, id: i32) -> Vec<JobApplicati
 #[tauri::command]
 fn get_job_application_status_histories(app_handle: AppHandle, id: i32) -> Vec<JobApplicationStatusHistory> {
     app_handle.conn(|conn| job::get_job_application_status_histories(conn, id)).unwrap()
+}
+
+#[tauri::command]
+fn get_all_data(app_handle: AppHandle) -> Vec<JobApplication> {
+    app_handle.conn(|conn| job::get_all_data(conn)).unwrap()
 }
