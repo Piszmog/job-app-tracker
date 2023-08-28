@@ -26,5 +26,3 @@ TODO
 - Finish README
 - Pretty statistics
 - Delete Job Application
-- GitHub Actions
-- Downloadable binaries
