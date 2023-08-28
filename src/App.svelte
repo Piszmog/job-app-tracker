@@ -28,7 +28,7 @@
 		<p class="text-sm font-semibold leading-6 text-gray-900">Loading...</p>
 	{:then data}
 		<Stats jobsApplications={jobs} />
-		<Jobs {jobs} />
+		<Jobs bind:jobs />
 	{:catch error}
 		<p class="text-sm font-semibold leading-6 text-gray-900">Error: {error.message}</p>
 	{/await}

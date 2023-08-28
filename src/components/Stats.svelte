@@ -18,8 +18,10 @@
 			}
 			totalApplications++;
 		});
-		averageTime = Math.round(totalDays / totalApplications);
-		rejectionPercentage = Math.round((totalRejections / totalApplications) * 100);
+		if (totalApplications > 0) {
+			averageTime = Math.round(totalDays / totalApplications);
+			rejectionPercentage = Math.round((totalRejections / totalApplications) * 100);
+		}
 	}
 </script>
 
