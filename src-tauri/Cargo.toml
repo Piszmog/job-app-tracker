@@ -1,6 +1,6 @@
 [package]
 name = "job-app-tracker"
-version = "0.1.2"
+version = "0.1.3"
 description = "Track your job applications"
 authors = ["Piszmog"]
 license = ""
