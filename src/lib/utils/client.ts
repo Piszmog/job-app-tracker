@@ -45,3 +45,7 @@ export const getJobApplicationStatusHistories = async (id: number): Promise<JobA
 export const getAllData = async (): Promise<JobApplication[]> => {
 	return (await invoke('get_all_data')) as JobApplication[];
 };
+
+export const importJobs = async (data: JobApplication[]) => {
+	return await invoke('import_data', { data });
+};

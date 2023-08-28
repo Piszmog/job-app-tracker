@@ -10,6 +10,8 @@ export interface JobApplication extends Record {
 	url: string;
 	status: JobApplicationStatus;
 	appliedAt: string;
+	notes?: JobApplicationNote[];
+	statuses?: JobApplicationStatusHistory[];
 }
 
 export interface JobApplicationNote extends Record {

@@ -3,7 +3,7 @@ use std::path::Path;
 use rusqlite::{Connection, Error, params, Result, Row};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JobApplication {
     pub id: i32,
@@ -60,7 +60,7 @@ impl JobApplicationStatus {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JobApplicationNote {
     pub id: i32,
@@ -69,7 +69,7 @@ pub struct JobApplicationNote {
     pub created_at: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JobApplicationStatusHistory {
     pub id: i32,
@@ -264,6 +264,75 @@ pub fn get_all_data(conn: &Connection) -> Result<Vec<JobApplication>> {
         data.push(app);
     }
     Ok(data)
+}
+
+pub fn import_data(conn: &mut Connection, jobs: Vec<JobApplication>) -> Result<()> {
+    let tx = conn.transaction()?;
+    // clear data
+    tx.execute(
+        "DELETE FROM job_applications",
+        params![],
+    )?;
+    tx.execute(
+        "DELETE FROM job_application_notes",
+        params![],
+    )?;
+    tx.execute(
+        "DELETE FROM job_application_status_histories",
+        params![],
+    )?;
+    for job in jobs {
+        let application = {
+            let mut statement = tx.prepare(
+                "INSERT INTO
+            job_applications (company, title, url, status, applied_at, updated_at, created_at)
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+            RETURNING id, company, title, url, status, applied_at, updated_at, created_at",
+            )?;
+            statement.query_row(
+                params![
+                job.company,
+                job.title,
+                job.url,
+                job.status.to_string(),
+                job.applied_at,
+                job.updated_at,
+                job.created_at,
+            ],
+                scan_job_application,
+            )?
+        };
+        if let Some(notes) = job.notes {
+            for note in notes {
+                tx.execute(
+                    "INSERT INTO
+                    job_application_notes (job_application_id, note, created_at)
+                    VALUES (?1, ?2, ?3)",
+                    params![
+                        application.id,
+                        note.note,
+                        note.created_at,
+                    ],
+                )?;
+            }
+        }
+        if let Some(statuses) = job.statuses {
+            for status in statuses {
+                tx.execute(
+                    "INSERT INTO
+                    job_application_status_histories (job_application_id, status, created_at)
+                    VALUES (?1, ?2, ?3)",
+                    params![
+                        application.id,
+                        status.status.to_string(),
+                        status.created_at,
+                    ],
+                )?;
+            }
+        }
+    }
+    tx.commit()?;
+    Ok(())
 }
 
 fn scan_job_application_note(row: &Row) -> Result<JobApplicationNote> {

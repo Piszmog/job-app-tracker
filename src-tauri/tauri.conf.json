@@ -24,7 +24,10 @@
 				"all": true
 			},
 			"fs": {
-				"all": true
+				"writeFile": true,
+				"readDir": true,
+				"readFile": true,
+				"exists": true
 			}
 		},
 		"bundle": {
