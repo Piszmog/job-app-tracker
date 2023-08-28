@@ -9,6 +9,8 @@ on:
 jobs:
   tag:
     name: Tag
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
