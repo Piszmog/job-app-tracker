@@ -1,17 +1,32 @@
 name: Release
 on:
-  push:
-    tags:
-      - 'v*'
-
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version to release
+        required: true
+        type: string
 jobs:
+  tag:
+    name: Tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Create Tag
+        uses: negz/create-tag@v1
+        with:
+          version: ${{ github.event.inputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
   release:
+    needs:
+      - tag
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-20.04, windows-latest]
+        platform: [ macos-latest, ubuntu-20.04, windows-latest ]
     runs-on: ${{ matrix.platform }}
 
     steps:
