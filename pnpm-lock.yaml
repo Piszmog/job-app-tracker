@@ -34,9 +34,6 @@ devDependencies:
   autoprefixer:
     specifier: ^10.4.15
     version: 10.4.15(postcss@8.4.28)
-  chartjs:
-    specifier: ^0.3.24
-    version: 0.3.24
   cssnano:
     specifier: ^6.0.1
     version: 6.0.1(postcss@8.4.28)
@@ -893,10 +890,6 @@ packages:
     dependencies:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
-    dev: true
-
-  /chartjs@0.3.24:
-    resolution: {integrity: sha512-h6G9qcDqmFYnSWqjWCzQMeOLiypS+pM6Fq2Rj7LPty8Kjx5yHonwwJ7oEHImZpQ2u9Pu36XGYfardvvBiQVrhg==}
     dev: true
 
   /chokidar@3.5.3:
