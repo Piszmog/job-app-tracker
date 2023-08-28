@@ -22,8 +22,24 @@ The application also tracks the history of a Job Application.
 Go to the [releases](https://github.com/Piszmog/job-app-tracker/releases) and download the latest release for your
 operating system.
 
+## Development
+
+### Prerequisites
+
+- [Rust](https://www.rust-lang.org/tools/install)
+- [Node.js](https://nodejs.org/en/download/)
+- [pnpm](https://pnpm.io/installation)
+- [Tauri](https://tauri.app/v1/guides/getting-started/prerequisites)
+
+### Run
+
+Run the following command to start the application.
+
+```shell
+pnpm tauri dev
+```
+
 ## TODOS
 
-- Finish README
 - Pretty statistics
 - Delete Job Application
