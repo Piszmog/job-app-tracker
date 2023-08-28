@@ -19,7 +19,8 @@ The application also tracks the history of a Job Application.
 
 ## Installation
 
-TODO
+Got to the [releases](https://github.com/Piszmog/job-app-tracker/releases) and download the latest release for your
+operating system.
 
 ## TODOS
 
