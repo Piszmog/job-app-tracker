@@ -42,4 +42,3 @@ pnpm tauri dev
 ## TODOS
 
 - Pretty statistics
-- Delete Job Application
