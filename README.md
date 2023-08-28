@@ -42,3 +42,4 @@ pnpm tauri dev
 ## TODOS
 
 - Pretty statistics
+- Better icons
