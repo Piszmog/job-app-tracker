@@ -39,7 +39,7 @@
 		<div class="min-w-0 flex-1">
 			<div>
 				<p class="mt-0.5 text-sm text-gray-500">
-					Note add
+					Note added
 					<span class="whitespace-nowrap">{new Date(createdAt).toDateString()}</span>
 				</p>
 			</div>
