@@ -8,9 +8,11 @@
 	import Drawer from './Drawer.svelte';
 	import JobDetails from './JobDetails.svelte';
 	import { getJobApplicationNotes, getJobApplicationStatusHistories } from '../lib/utils/client';
+	import Filter from './Filter.svelte';
 
 	export let jobs: JobApplication[] = [];
 
+	let filteredJobs = jobs;
 	let open = false;
 	let selectedJob: JobApplication;
 	let notes: JobApplicationNote[] = [];
@@ -28,11 +30,23 @@
 		jobs[index].status = detail.status;
 		jobs[index].updatedAt = detail.createdAt;
 	};
+
+	let filterCompany = '';
+	let filterStatus = '';
+	$: {
+		filteredJobs = jobs.filter((job) => {
+			const companyMatch = job.company.toLowerCase().includes(filterCompany.toLowerCase());
+			const statusMatch = job.status.toLowerCase().includes(filterStatus.toLowerCase());
+			return companyMatch && statusMatch;
+		});
+	}
 </script>
 
-{#if jobs}
+<Filter bind:company={filterCompany} bind:status={filterStatus} />
+
+{#if filteredJobs}
 	<ul role="list" class="divide-y divide-gray-100 px-4 py-5 sm:px-6">
-		{#each jobs as job (job.id)}
+		{#each filteredJobs as job (job.id)}
 			<li class="flex items-center justify-between gap-x-6 py-5">
 				<Job
 					company={job.company}

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type {
-		JobApplication,
 		JobApplicationNote,
+		JobApplicationStatus,
 		JobApplicationStatusHistory
 	} from '../lib/utils/types';
-	import { JobApplicationStatus, statusOptions } from '../lib/utils/types';
+	import { statusOptions } from '../lib/utils/types';
 	import { createEventDispatcher } from 'svelte';
 	import Select from './Select.svelte';
 	import { updateJobApplicationStatus } from '../lib/utils/client';
@@ -62,7 +62,7 @@
 					type="text"
 					name="company"
 					id="company"
-					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 read-only:bg-gray-50 read-only:text-gray-500 read-only:ring-gray-200 sm:text-sm sm:leading-6"
+					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 placeholder:text-gray-400 read-only:bg-gray-50 read-only:text-gray-500 read-only:ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
 					readonly
 					value={company}
 				/>
@@ -75,7 +75,7 @@
 					type="text"
 					name="title"
 					id="title"
-					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 read-only:bg-gray-50 read-only:text-gray-500 read-only:ring-gray-200 sm:text-sm sm:leading-6"
+					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 placeholder:text-gray-400 read-only:bg-gray-50 read-only:text-gray-500 read-only:ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
 					readonly
 					value={title}
 				/>
@@ -88,7 +88,7 @@
 					type="url"
 					name="URL"
 					id="url"
-					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 read-only:bg-gray-50 read-only:text-gray-500 read-only:ring-gray-200 sm:text-sm sm:leading-6"
+					class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 placeholder:text-gray-400 read-only:bg-gray-50 read-only:text-gray-500 read-only:ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
 					readonly
 					value={url}
 				/>

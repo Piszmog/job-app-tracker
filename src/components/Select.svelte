@@ -16,7 +16,7 @@
 	const randomId = random();
 </script>
 
-<div>
+<div class="w-full">
 	<label for={randomId} class="block text-sm font-medium leading-6 text-gray-900">{label}</label>
 	<div class="relative mt-2 rounded-md shadow-sm">
 		<select
