@@ -7,6 +7,7 @@
 
 	let averageTime = 0;
 	let rejectionPercentage = 0;
+	let companies: string[] = [];
 	$: {
 		let totalDays = 0;
 		let totalApplications = 0;
@@ -15,6 +16,9 @@
 			totalDays += calculateAgeInDays(new Date(jobApplication.appliedAt));
 			if (jobApplication.status === JobApplicationStatus.Rejected) {
 				totalRejections++;
+			}
+			if (!companies.includes(jobApplication.company)) {
+				companies.push(jobApplication.company);
 			}
 			totalApplications++;
 		});
@@ -26,13 +30,21 @@
 </script>
 
 <div class="m-3 border-b">
-	<dl class="mx-auto grid grid-cols-1 gap-px bg-gray-900/5 sm:grid-cols-3 lg:grid-cols-3">
+	<dl class="mx-auto grid grid-cols-1 gap-px bg-gray-900/5 sm:grid-cols-4 lg:grid-cols-4">
 		<div
 			class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 bg-white px-4 py-3 sm:px-6 xl:px-8"
 		>
 			<dt class="text-sm font-medium leading-6 text-gray-500">Total Applications</dt>
 			<dd class="w-full flex-none text-2xl font-medium leading-10 tracking-tight text-gray-900">
 				{jobsApplications.length}
+			</dd>
+		</div>
+		<div
+			class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 bg-white px-4 py-3 sm:px-6 xl:px-8"
+		>
+			<dt class="text-sm font-medium leading-6 text-gray-500">Total Companies</dt>
+			<dd class="w-full flex-none text-2xl font-medium leading-10 tracking-tight text-gray-900">
+				{companies.length}
 			</dd>
 		</div>
 		<div
