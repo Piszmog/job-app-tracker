@@ -18,7 +18,7 @@
 				totalRejections++;
 			}
 			if (!companies.includes(jobApplication.company)) {
-				companies.push(jobApplication.company);
+				companies = [...companies, jobApplication.company];
 			}
 			totalApplications++;
 		});
