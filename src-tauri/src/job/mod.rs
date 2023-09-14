@@ -23,6 +23,7 @@ pub struct JobApplication {
 pub enum JobApplicationStatus {
     Accepted,
     Applied,
+    Cancelled,
     Declined,
     Interviewing,
     Offered,
@@ -36,6 +37,7 @@ impl JobApplicationStatus {
         match s.as_str() {
             "accepted" => Self::Accepted,
             "applied" => Self::Applied,
+            "cancelled" => Self::Cancelled,
             "declined" => Self::Declined,
             "interviewing" => Self::Interviewing,
             "offered" => Self::Offered,
@@ -50,6 +52,7 @@ impl JobApplicationStatus {
         match self {
             Self::Accepted => "accepted".to_string(),
             Self::Applied => "applied".to_string(),
+            Self::Cancelled => "cancelled".to_string(),
             Self::Declined => "declined".to_string(),
             Self::Interviewing => "interviewing".to_string(),
             Self::Offered => "offered".to_string(),

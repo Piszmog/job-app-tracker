@@ -27,6 +27,7 @@ export interface JobApplicationStatusHistory extends Record {
 export enum JobApplicationStatus {
 	Accepted = 'accepted',
 	Applied = 'applied',
+	Cancelled = 'cancelled',
 	Declined = 'declined',
 	Interviewing = 'interviewing',
 	Offered = 'offered',

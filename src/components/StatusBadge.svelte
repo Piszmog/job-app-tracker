@@ -8,6 +8,7 @@
 <p
 	class:accepted={status === 'accepted'}
 	class:applied={status === 'applied'}
+	class:cancelled={status === 'cancelled'}
 	class:declined={status === 'declined'}
 	class:interviewing={status === 'interviewing'}
 	class:offered={status === 'offered'}
@@ -26,6 +27,10 @@
 
 	.applied {
 		@apply bg-blue-50 text-blue-700 ring-blue-600/20;
+	}
+
+	.cancelled {
+		@apply bg-gray-50 text-gray-700 ring-gray-600/20;
 	}
 
 	.declined {
