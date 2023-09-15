@@ -13,9 +13,9 @@
 		const data = new FormData(form);
 
 		const jobApplication = await createJobApplication(
-			data.get('company'),
-			data.get('title'),
-			data.get('url')
+			data.get('company') as string,
+			data.get('title') as string,
+			data.get('url') as string
 		);
 		form.reset();
 		dispatch('submit', jobApplication);

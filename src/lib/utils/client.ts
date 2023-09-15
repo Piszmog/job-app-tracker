@@ -13,12 +13,18 @@ export const createJobApplication = async (
 	return (await invoke('create_job_application', { company, title, url })) as JobApplication;
 };
 
-export const updateJobApplicationStatus = async (
+export const updateJobApplication = async (
 	id: number,
+	company: string,
+	title: string,
+	url: string,
 	status: string
 ): Promise<JobApplicationStatusHistory> => {
-	return (await invoke('update_job_application_status', {
+	return (await invoke('update_job_application', {
 		id,
+		company,
+		title,
+		url,
 		status
 	})) as JobApplicationStatusHistory;
 };

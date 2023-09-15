@@ -156,24 +156,47 @@ pub fn create_job_application(conn: &mut Connection, company: &str, title: &str,
     Ok(application)
 }
 
-pub fn update_job_application_status(conn: &mut Connection, id: i32, status: JobApplicationStatus) -> Result<JobApplicationStatusHistory> {
+pub fn update_job_application(conn: &mut Connection, id: i32, company: &str, title: &str, url: &str, status: JobApplicationStatus) -> Result<JobApplicationStatusHistory> {
     let tx = conn.transaction()?;
 
     tx.execute(
         "UPDATE job_applications
-        SET status = ?1, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?2",
+        SET company = ?1, title = ?2, url = ?3, status = ?4, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?5",
         params![
+            company,
+            title,
+            url,
             status.to_string(),
             id,
         ],
     )?;
     let job_status = {
+        tx.execute(
+            "INSERT INTO job_application_status_histories (job_application_id, status)
+                SELECT ?1, ?2
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM (
+                             SELECT status
+                             FROM job_application_status_histories
+                             WHERE job_application_id = ?1
+                             ORDER BY created_at DESC
+                             LIMIT 1
+                         )
+                    WHERE status = ?2
+                )",
+            params![
+                id,
+                status.to_string(),
+            ],
+        )?;
         let mut statement = tx.prepare(
-            "INSERT INTO
-        job_application_status_histories (job_application_id, status)
-        VALUES (?1, ?2)
-        RETURNING id, job_application_id, status, created_at",
+            "SELECT *
+                FROM job_application_status_histories
+                WHERE job_application_id = ?1 AND status = ?2
+                ORDER BY created_at DESC
+                LIMIT 1",
         )?;
         statement.query_row(
             params![

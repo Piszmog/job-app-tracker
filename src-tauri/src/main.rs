@@ -17,7 +17,7 @@ fn main() -> Result<()> {
             greet,
             get_job_applications,
             create_job_application,
-            update_job_application_status,
+            update_job_application,
             get_job_application,
             add_job_application_note,
             get_job_application_notes,
@@ -85,8 +85,8 @@ fn create_job_application(app_handle: AppHandle, company: &str, title: &str, url
 }
 
 #[tauri::command]
-fn update_job_application_status(app_handle: AppHandle, id: i32, status: job::JobApplicationStatus) -> JobApplicationStatusHistory {
-    app_handle.conn_mut(|conn| job::update_job_application_status(conn, id, status)).unwrap()
+fn update_job_application(app_handle: AppHandle, id: i32, company: &str, title: &str, url: &str, status: job::JobApplicationStatus) -> JobApplicationStatusHistory {
+    app_handle.conn_mut(|conn| job::update_job_application(conn, id, company, title, url, status)).unwrap()
 }
 
 #[tauri::command]
