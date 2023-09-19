@@ -28,6 +28,7 @@ export enum JobApplicationStatus {
 	Accepted = 'accepted',
 	Applied = 'applied',
 	Cancelled = 'cancelled',
+	Closed = 'closed',
 	Declined = 'declined',
 	Interviewing = 'interviewing',
 	Offered = 'offered',

@@ -9,6 +9,7 @@
 	class:accepted={status === 'accepted'}
 	class:applied={status === 'applied'}
 	class:cancelled={status === 'cancelled'}
+	class:closed={status === 'closed'}
 	class:declined={status === 'declined'}
 	class:interviewing={status === 'interviewing'}
 	class:offered={status === 'offered'}
@@ -30,6 +31,10 @@
 	}
 
 	.cancelled {
+		@apply bg-gray-50 text-gray-700 ring-gray-600/20;
+	}
+
+	.closed {
 		@apply bg-gray-50 text-gray-700 ring-gray-600/20;
 	}
 
