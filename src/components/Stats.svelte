@@ -11,14 +11,17 @@
 	let companies: string[] = [];
 	$: {
 		let totalDays = 0;
-		let totalHearedBack = 0;
+		let totalHeardBack = 0;
 		let totalApplications = 0;
 		let totalRejections = 0;
 		let totalInterviews = 0;
 		jobsApplications.forEach((jobApplication) => {
 			if (jobApplication.status !== JobApplicationStatus.Applied) {
-				totalDays += calculateAgeInDays(new Date(jobApplication.appliedAt));
-				totalHearedBack++;
+				totalDays += calculateAgeInDays(
+					new Date(jobApplication.appliedAt),
+					new Date(jobApplication.updatedAt)
+				);
+				totalHeardBack++;
 			}
 			if (jobApplication.status === JobApplicationStatus.Rejected) {
 				totalRejections++;
@@ -32,7 +35,7 @@
 			totalApplications++;
 		});
 		if (totalApplications > 0) {
-			averageTime = Math.round(totalDays / totalHearedBack);
+			averageTime = Math.round(totalDays / totalHeardBack);
 			rejectionPercentage = Math.round((totalRejections / totalApplications) * 100);
 			interviewPercentage = Math.round((totalInterviews / totalApplications) * 100);
 		}

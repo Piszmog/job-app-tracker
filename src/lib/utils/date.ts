@@ -1,9 +1,4 @@
-export const calculateAgeInDays = (date: Date): number => {
-	const today = new Date();
-	const timeDifference = today.getTime() - date.getTime();
-	const value = Math.floor(timeDifference / (1000 * 3600 * 24));
-	if (value < 0) {
-		return 0;
-	}
-	return value;
+export const calculateAgeInDays = (start: Date, end: Date): number => {
+	const diff = Math.abs(start.getTime() - end.getTime());
+	return Math.ceil(diff / (1000 * 60 * 60 * 24));
 };
