@@ -1,18 +1,12 @@
 <script lang="ts">
-	import type { JobApplication, Stats } from '../lib/utils/types';
-	import { onMount } from 'svelte';
 	import { getStats } from '../lib/utils/client';
 
-	export let jobsApplications: JobApplication[];
+	export let reload = false;
 
-	let statsPromise: Promise<Stats>;
-	$: {
+	let statsPromise = getStats();
+	$: if (reload) {
 		statsPromise = getStats();
 	}
-
-	onMount(() => {
-		statsPromise = getStats();
-	});
 </script>
 
 {#await statsPromise}

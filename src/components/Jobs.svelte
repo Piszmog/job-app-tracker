@@ -11,6 +11,7 @@
 	import Filter from './Filter.svelte';
 
 	export let jobs: JobApplication[] = [];
+	export let reload = false;
 
 	let filteredJobs = jobs;
 	let open = false;
@@ -22,6 +23,7 @@
 		notes = await getJobApplicationNotes(job.id);
 		histories = await getJobApplicationStatusHistories(job.id);
 		open = true;
+		reload = true;
 	};
 
 	const handleSubmit = (e: CustomEvent<JobApplicationStatusHistory>) => {

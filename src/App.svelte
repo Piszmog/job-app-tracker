@@ -15,10 +15,11 @@
 	});
 
 	let open = false;
-
+	let reload = false;
 	const handleAddJob = (e: CustomEvent<JobApplication>) => {
 		jobs = [e.detail, ...jobs];
 		open = false;
+		reload = true;
 	};
 </script>
 
@@ -27,8 +28,8 @@
 	{#await jobApplications}
 		<p class="text-sm font-semibold leading-6 text-gray-900">Loading...</p>
 	{:then data}
-		<Stats jobsApplications={jobs} />
-		<Jobs bind:jobs />
+		<Stats {reload} />
+		<Jobs bind:jobs bind:reload />
 	{:catch error}
 		<p class="text-sm font-semibold leading-6 text-gray-900">Error: {error.message}</p>
 	{/await}
