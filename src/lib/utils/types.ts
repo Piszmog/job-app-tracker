@@ -46,3 +46,11 @@ export type Option = {
 	label: string;
 	value: string;
 };
+
+export interface Stats {
+	totalApplications: number;
+	totalCompanies: number;
+	averageTimeToHearBack: number;
+	totalInterviewing: number;
+	totalRejections: number;
+}

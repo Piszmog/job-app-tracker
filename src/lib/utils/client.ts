@@ -1,5 +1,10 @@
 import { invoke } from '@tauri-apps/api/tauri';
-import type { JobApplication, JobApplicationNote, JobApplicationStatusHistory } from './types';
+import type {
+	JobApplication,
+	JobApplicationNote,
+	JobApplicationStatusHistory,
+	Stats
+} from './types';
 
 export const getJobApplications = async (): Promise<JobApplication[]> => {
 	return (await invoke('get_job_applications')) as JobApplication[];
@@ -54,4 +59,8 @@ export const getAllData = async (): Promise<JobApplication[]> => {
 
 export const importJobs = async (data: JobApplication[]) => {
 	return await invoke('import_data', { data });
+};
+
+export const getStats = async (): Promise<Stats> => {
+	return await invoke('get_stats');
 };

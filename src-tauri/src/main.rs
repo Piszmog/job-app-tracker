@@ -6,7 +6,7 @@ use std::fs;
 use rusqlite::{Connection, Result};
 use tauri::{AppHandle, Manager, State};
 
-use crate::job::{JobApplication, JobApplicationNote, JobApplicationStatusHistory};
+use crate::job::{JobApplication, JobApplicationNote, JobApplicationStatusHistory, Stats};
 
 pub(crate) mod job;
 
@@ -24,6 +24,7 @@ fn main() -> Result<()> {
             get_job_application_status_histories,
             get_all_data,
             import_data,
+            get_stats,
         ])
         .setup(|app| {
             let app_handle = app.handle();
@@ -117,4 +118,9 @@ fn get_all_data(app_handle: AppHandle) -> Vec<JobApplication> {
 #[tauri::command]
 fn import_data(app_handle: AppHandle, data: Vec<JobApplication>) {
     app_handle.conn_mut(|conn| job::import_data(conn, data)).unwrap()
+}
+
+#[tauri::command]
+fn get_stats(app_handle: AppHandle) -> Stats {
+    app_handle.conn(|conn| job::get_stats(conn)).unwrap()
 }

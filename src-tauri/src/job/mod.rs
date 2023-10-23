@@ -84,6 +84,16 @@ pub struct JobApplicationStatusHistory {
     pub created_at: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Stats {
+    pub total_applications: i32,
+    pub total_companies: i32,
+    pub average_time_to_hear_back: f32,
+    pub total_interviewing: i32,
+    pub total_rejections: i32,
+}
+
 pub fn init<P: AsRef<Path>>(path: P) -> Result<Connection, Error> {
     // TODO foreign key constraints
     let conn = Connection::open(path)?;
@@ -394,5 +404,36 @@ fn scan_job_application_status_history(row: &Row) -> Result<JobApplicationStatus
         job_application_id: row.get(1)?,
         status: JobApplicationStatus::from_str(row.get(2)?),
         created_at: row.get(3)?,
+    })
+}
+
+pub fn get_stats(conn: &Connection) -> Result<Stats> {
+    let mut statement = conn.prepare(
+        "WITH first_status AS (
+            SELECT job_application_id, min(created_at) as first_status_at
+            FROM job_application_status_histories
+            WHERE status = 'interviewing' or status = 'rejected' or status = 'cancelled' or status = 'closed'
+            GROUP BY job_application_id
+        )
+        SELECT
+            (SELECT COUNT(*) FROM job_applications) as total_applications,
+            COUNT(DISTINCT company) as total_companies,
+            ROUND(AVG(JULIANDAY(fs.first_status_at) - JULIANDAY(ja.applied_at))) as average_time_to_hear_back,
+            SUM(CASE WHEN status = 'interviewing' THEN 1 ELSE 0 END) as total_interviewing,
+            SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as total_rejections
+        FROM job_applications ja
+        JOIN first_status fs ON ja.id = fs.job_application_id",
+    )?;
+    let stats = statement.query_row(params![], scan_stats)?;
+    Ok(stats)
+}
+
+fn scan_stats(row: &Row) -> Result<Stats> {
+    Ok(Stats {
+        total_applications: row.get(0)?,
+        total_companies: row.get(1)?,
+        average_time_to_hear_back: row.get(2)?,
+        total_interviewing: row.get(3)?,
+        total_rejections: row.get(4)?,
     })
 }
